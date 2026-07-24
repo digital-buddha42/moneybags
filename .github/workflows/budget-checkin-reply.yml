@@ -1,17 +1,17 @@
-name: Weekly YNAB Budget Check-in
+name: Budget Check-in Reply
 
 on:
-  schedule:
-    # 19:00 America/Phoenix (UTC-7, no DST — Arizona doesn't observe it) =
-    # 02:00 UTC the following day. This stays correct year-round.
-    - cron: "0 2 * * 1"
-  workflow_dispatch: {}
+  issue_comment:
+    types: [created]
 
 permissions:
   issues: write
 
 jobs:
-  checkin:
+  reply:
+    if: >-
+      github.event.comment.user.type != 'Bot' &&
+      contains(github.event.issue.labels.*.name, 'ynab-checkin')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,7 +22,7 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - run: python ynab_checkin.py
+      - run: python ynab_reply.py
         env:
           YNAB_TOKEN: ${{ secrets.YNAB_TOKEN }}
           YNAB_BUDGET_ID: ${{ secrets.YNAB_BUDGET_ID }}

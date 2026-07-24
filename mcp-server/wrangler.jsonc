@@ -1,6 +1,14 @@
 {
-  "name": "moneybags-mcp",
-  "main": "src/index.ts",
-  "compatibility_date": "2026-01-28",
-  "compatibility_flags": ["nodejs_compat"]
+	"name": "moneybags-mcp",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-01-28",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"kv_namespaces": [
+		{
+			"binding": "OAUTH_KV",
+			"id": "1e1e41cb829746e2ae7ae26ad3168925"
+		}
+	]
 }

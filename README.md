@@ -63,6 +63,13 @@ from the public
 repo's `CLAUDE.md` (plain unauthenticated fetch, no token needed) and
 factor it into the advice.
 
+## On-demand queries from anywhere
+
+For "can I afford this?" questions at any moment — not just on the weekly
+cadence — see [`mcp-server/`](mcp-server/): a small Cloudflare Workers MCP
+server exposing the same YNAB and goals data as tools you can add as a
+Custom Connector in the Claude app (including on your phone).
+
 ## Running locally
 
 ```bash

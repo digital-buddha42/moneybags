@@ -28,7 +28,10 @@ Requires a (free) [Cloudflare account](https://dash.cloudflare.com/sign-up).
 
 `.github/workflows/deploy-mcp-server.yml` runs `wrangler deploy` on GitHub's
 runners — useful if you don't want to install Node/wrangler locally, or if
-you're working from an environment with restricted network access.
+you're working from an environment with restricted network access. It also
+provisions the OAuth session KV namespace automatically on first run
+(committing the resulting binding back to `wrangler.jsonc`), and skips that
+step on later runs since it's already there.
 
 1. Generate a Cloudflare API token: **dash.cloudflare.com → profile icon →
    My Profile → API Tokens → Create Token → "Edit Cloudflare Workers"
@@ -50,10 +53,15 @@ npm install
 # Log in to your Cloudflare account (opens a browser)
 npx wrangler login
 
+# One-time: create the KV namespace OAuth sessions are stored in, and wire
+# it into wrangler.jsonc (skip this if it's already there — e.g. Option A
+# already ran it and committed the result)
+npx wrangler kv namespace create moneybags-mcp-oauth --binding OAUTH_KV --update-config
+
 # Set secrets (never commit these — see .dev.vars below for local testing)
 npx wrangler secret put YNAB_TOKEN
 npx wrangler secret put YNAB_BUDGET_ID
-npx wrangler secret put MCP_AUTH_TOKEN   # a long random string, e.g. `openssl rand -hex 32` — this is what protects your endpoint, treat it like a password
+npx wrangler secret put MCP_AUTH_TOKEN   # a long random string, e.g. `openssl rand -hex 32` — this is the password you'll type into the login page below, treat it like one
 
 npx wrangler deploy
 ```
@@ -64,14 +72,20 @@ that URL plus `/mcp`.
 
 ## Add it to Claude
 
+The server is protected by real OAuth (`@cloudflare/workers-oauth-provider`),
+not a manually-entered header, so this is just:
+
 In the Claude app: **Settings → Connectors → Add custom connector**.
 
 - **URL**: `https://moneybags-mcp.<your-subdomain>.workers.dev/mcp`
-- **Authorization header**: `Bearer <the MCP_AUTH_TOKEN you set above>`
+- Leave everything else blank and click **Add**.
 
-Once added, any conversation (including on your phone) can ask things like
-"can I afford a $150 guitar pedal?" and Claude will call `check_affordability`
-directly.
+Claude will register itself with the server automatically, then open a
+one-time login page asking for a password — enter your `MCP_AUTH_TOKEN`
+there. After that, any conversation (including on your phone) can ask things
+like "can I afford a $150 guitar pedal?" and Claude will call
+`check_affordability` directly. There's no header to configure and nothing
+else to paste in.
 
 ## Local development
 

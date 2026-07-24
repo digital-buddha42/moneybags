@@ -3,6 +3,9 @@ name: Deploy MCP Server
 on:
   workflow_dispatch: {}
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,6 +20,28 @@ jobs:
           node-version: "22"
 
       - run: npm install
+
+      - name: Ensure OAuth KV namespace exists
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if grep -q '"OAUTH_KV"' wrangler.jsonc; then
+            echo "OAUTH_KV already configured in wrangler.jsonc, skipping creation."
+          else
+            npx wrangler kv namespace create moneybags-mcp-oauth --binding OAUTH_KV --update-config
+          fi
+
+      - name: Commit updated wrangler config if changed
+        run: |
+          if ! git diff --quiet -- wrangler.jsonc; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add wrangler.jsonc
+            git commit -m "Add OAUTH_KV namespace binding (automated)"
+            git push
+          else
+            echo "No changes to wrangler.jsonc."
+          fi
 
       - name: Set Worker secrets
         env:

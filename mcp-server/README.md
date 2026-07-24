@@ -22,8 +22,26 @@ API call the server makes on your behalf.
 
 ## Deploy
 
-Requires a (free) [Cloudflare account](https://dash.cloudflare.com/sign-up)
-and Node 18+.
+Requires a (free) [Cloudflare account](https://dash.cloudflare.com/sign-up).
+
+### Option A: via GitHub Actions (no local setup)
+
+`.github/workflows/deploy-mcp-server.yml` runs `wrangler deploy` on GitHub's
+runners — useful if you don't want to install Node/wrangler locally, or if
+you're working from an environment with restricted network access.
+
+1. Generate a Cloudflare API token: **dash.cloudflare.com → profile icon →
+   My Profile → API Tokens → Create Token → "Edit Cloudflare Workers"
+   template**.
+2. Add these as repository secrets (**Settings → Secrets and variables →
+   Actions**): `CLOUDFLARE_API_TOKEN` (from step 1) and `MCP_AUTH_TOKEN` (a
+   long random string you invent, e.g. `openssl rand -hex 32` — this is what
+   protects your endpoint, treat it like a password). `YNAB_TOKEN` and
+   `YNAB_BUDGET_ID` are already repo secrets from the weekly check-in setup.
+3. Run the workflow from the **Actions** tab (**Deploy MCP Server → Run
+   workflow**). Its logs will print your server's URL.
+
+### Option B: from your own computer
 
 ```bash
 cd mcp-server
@@ -40,7 +58,7 @@ npx wrangler secret put MCP_AUTH_TOKEN   # a long random string, e.g. `openssl r
 npx wrangler deploy
 ```
 
-Deploy prints your server's URL, something like
+Either way, deploy prints your server's URL, something like
 `https://moneybags-mcp.<your-subdomain>.workers.dev`. The MCP endpoint is
 that URL plus `/mcp`.
 

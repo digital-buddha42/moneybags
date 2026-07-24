@@ -1,0 +1,32 @@
+name: Deploy MCP Server
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp-server
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - run: npm install
+
+      - name: Set Worker secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "${{ secrets.YNAB_TOKEN }}" | npx wrangler secret put YNAB_TOKEN
+          echo "${{ secrets.YNAB_BUDGET_ID }}" | npx wrangler secret put YNAB_BUDGET_ID
+          echo "${{ secrets.MCP_AUTH_TOKEN }}" | npx wrangler secret put MCP_AUTH_TOKEN
+
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx wrangler deploy

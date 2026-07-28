@@ -47,7 +47,9 @@ export async function fetchCurrentMonth(budgetId: string, token: string): Promis
 }
 
 export function summarizeMonth(month: RawMonth): MonthSummary {
-  const categories = month.categories.filter((c) => !c.deleted && !c.hidden);
+  const categories = month.categories.filter(
+    (c) => !c.deleted && !c.hidden && c.category_group_name !== "Internal Master Category"
+  );
 
   const overspent = categories
     .filter((c) => c.balance < 0)

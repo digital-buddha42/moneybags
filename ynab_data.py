@@ -21,7 +21,11 @@ def milliunits_to_dollars(milliunits: int) -> float:
 
 def summarize_month(month: dict) -> dict:
     categories = [
-        c for c in month["categories"] if not c["deleted"] and not c["hidden"]
+        c
+        for c in month["categories"]
+        if not c["deleted"]
+        and not c["hidden"]
+        and c["category_group_name"] != "Internal Master Category"
     ]
 
     overspent = sorted(
